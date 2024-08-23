@@ -25,8 +25,11 @@ In the code, we use the 'trinity' argument to enable the hierarchy graph linking
 #### Example Datasets
 Recognizing that accessing and processing all the data mentioned may be challenging, we are working to provide simpler example dataset to demonstrate functionality. Currently, we are using the mimic_ex [here](https://huggingface.co/datasets/Morson/mimic_ex) here as the Top-level data, which is the processed smaller dataset derived from MIMIC. For Medium-level and Bottom-level data, we are in the process of identifying suitable alternatives to simplify the implementation, welcome for any recommendations.
 
-### Prepare Neo4j and LLM
-prepare neo4j and LLM (using ChatGPT here for an example), you need to export:
+### 1. Prepare the environment, Neo4j and LLM
+1. conda env create -f medgraphrag.yml
+
+
+2. prepare neo4j and LLM (using ChatGPT here for an example), you need to export:
 
 export OPENAI_API_KEY = your OPENAI_API_KEY
 
@@ -36,12 +39,12 @@ export NEO4J_USERNAME= your NEO4J_USERNAME
 
 export NEO4J_PASSWORD= your NEO4J_PASSWORD
 
-### Construct the graph (use "mimic_ex" dataset as an example)
+### 2. Construct the graph (use "mimic_ex" dataset as an example)
 1. Download mimic_ex [here](https://huggingface.co/datasets/Morson/mimic_ex), put that under your data path, like ./dataset/mimic_ex
 
 2. python run.py -dataset mimic_ex -data_path ./dataset/mimic_ex(where you put the dataset) -grained_chunk True -ingraphmerge True -construct_graph True
 
-### Model Inference
+### 3. Model Inference
 1. put your prompt to ./prompt.txt
 
 2. python run.py -dataset mimic_ex -data_path ./dataset/mimic_ex(where you put the dataset) -inference True
