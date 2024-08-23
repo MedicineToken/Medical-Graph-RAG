@@ -45,3 +45,16 @@ export NEO4J_PASSWORD= your NEO4J_PASSWORD
 1. put your prompt to ./prompt.txt
 
 2. python run.py -dataset mimic_ex -data_path ./dataset/mimic_ex(where you put the dataset) -inference True
+
+## Acknowledgement:
+We are building on [CAMEL](https://github.com/camel-ai/camel), an awesome framework for construcing multi-agent pipeline.
+
+## Cite:
+~~~
+@article{wu2024medical,
+  title={Medical Graph RAG: Towards Safe Medical Large Language Model via Graph Retrieval-Augmented Generation},
+  author={Wu, Junde and Zhu, Jiayuan and Qi, Yunli},
+  journal={arXiv preprint arXiv:2408.04187},
+  year={2024}
+}
+~~~
