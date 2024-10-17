@@ -1,7 +1,7 @@
 # Medical-Graph-RAG
 We build a Graph RAG System specifically for the medical domain.
 
-Check our paper here: https://arxiv.org/html/2408.04187v1
+Check our paper here: https://arxiv.org/abs/2408.04187
 
 ## Quick Start (Baseline: a simple Graph RAG pipeline on medical data)
 1. conda env create -f medgraphrag.yml
