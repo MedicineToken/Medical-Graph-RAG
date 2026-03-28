@@ -17,6 +17,7 @@ from .base_model import BaseModelBackend
 from .gemini_model import GeminiModel
 from .groq_model import GroqModel
 from .litellm_model import LiteLLMModel
+from .minimax_model import MiniMaxModel
 from .mistral_model import MistralModel
 from .model_factory import ModelFactory
 from .nemotron_model import NemotronModel
@@ -33,6 +34,7 @@ __all__ = [
     'OpenAIModel',
     'AzureOpenAIModel',
     'AnthropicModel',
+    'MiniMaxModel',
     'MistralModel',
     'GroqModel',
     'StubModel',

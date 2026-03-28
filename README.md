@@ -46,6 +46,50 @@ export NEO4J_USERNAME= your NEO4J_USERNAME
 
 export NEO4J_PASSWORD= your NEO4J_PASSWORD
 
+#### Using MiniMax as an alternative LLM provider
+
+Medical-Graph-RAG supports [MiniMax](https://www.minimaxi.com/) as an alternative LLM provider via their OpenAI-compatible API. MiniMax-M2.7 offers 204K context window, which is well-suited for processing long medical documents.
+
+To use MiniMax instead of OpenAI:
+
+```bash
+export MINIMAX_API_KEY=your_minimax_api_key
+# Optional: explicitly set the provider (auto-detected from MINIMAX_API_KEY)
+export LLM_PROVIDER=minimax
+# Optional: override the default model
+export LLM_MODEL=MiniMax-M2.7-highspeed
+```
+
+Available MiniMax models: `MiniMax-M2.7` (default, 204K context), `MiniMax-M2.7-highspeed` (faster, 204K context).
+
+> **Note:** MiniMax does not provide a public embedding API. When using MiniMax as the LLM provider, embeddings will still use OpenAI's `text-embedding-3-small` model. Ensure `OPENAI_API_KEY` is set for embedding operations.
+
+For the `nano_graphrag` pipeline, pass the MiniMax completion function:
+
+```python
+from nano_graphrag import GraphRAG
+from nano_graphrag._llm import minimax_m27_complete
+
+graph_func = GraphRAG(
+    working_dir="./nanotest",
+    best_model_func=minimax_m27_complete,
+    cheap_model_func=minimax_m27_complete,
+)
+```
+
+For the CAMEL agent framework, use the MiniMax model type:
+
+```python
+from camel.models import ModelFactory
+from camel.types import ModelPlatformType, ModelType
+
+model = ModelFactory.create(
+    model_platform=ModelPlatformType.MINIMAX,
+    model_type=ModelType.MINIMAX_M27,
+    model_config_dict={"temperature": 0.2},
+)
+```
+
 ### 2. Construct the graph (use "mimic_ex" dataset as an example)
 1. Download mimic_ex [here](https://huggingface.co/datasets/Morson/mimic_ex), put that under your data path, like ./dataset/mimic_ex
 

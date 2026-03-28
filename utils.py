@@ -15,14 +15,70 @@ sys_prompt_two = """
 Modify the response to the question using the provided references. Include precise citations relevant to your answer. You may use multiple citations simultaneously, denoting each with the reference index number. For example, cite the first and third documents as [1][3]. If the references do not pertain to the response, simply provide a concise answer to the original question.
 """
 
-# Add your own OpenAI API key
-openai_api_key = os.getenv("OPENAI_API_KEY")
+# Provider configuration presets
+PROVIDER_PRESETS = {
+    "openai": {
+        "api_key_env": "OPENAI_API_KEY",
+        "base_url_env": "OPENAI_API_BASE_URL",
+        "default_model": "gpt-4-1106-preview",
+        "embedding_model": "text-embedding-3-small",
+    },
+    "minimax": {
+        "api_key_env": "MINIMAX_API_KEY",
+        "base_url_env": "MINIMAX_API_BASE_URL",
+        "default_base_url": "https://api.minimax.io/v1",
+        "default_model": "MiniMax-M2.7",
+        "embedding_model": None,  # MiniMax does not have a public embedding API
+    },
+}
 
-def get_embedding(text, mod = "text-embedding-3-small"):
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_API_BASE_URL")
+
+def _detect_provider():
+    """Auto-detect LLM provider from environment variables.
+
+    Priority: LLM_PROVIDER env var > MINIMAX_API_KEY presence > default openai.
+    """
+    explicit = os.getenv("LLM_PROVIDER", "").lower()
+    if explicit in PROVIDER_PRESETS:
+        return explicit
+    if os.getenv("MINIMAX_API_KEY"):
+        return "minimax"
+    return "openai"
+
+
+def _get_client(provider=None):
+    """Build an OpenAI-compatible client for the active provider."""
+    provider = provider or _detect_provider()
+    preset = PROVIDER_PRESETS[provider]
+    api_key = os.getenv(preset["api_key_env"])
+    base_url = os.getenv(
+        preset["base_url_env"],
+        preset.get("default_base_url"),
     )
+    return OpenAI(api_key=api_key, base_url=base_url), preset
+
+
+def _clamp_temperature(temperature, provider):
+    """Clamp temperature to valid range for the provider."""
+    if provider == "minimax":
+        # MiniMax requires temperature in (0.0, 1.0]
+        return max(0.01, min(temperature, 1.0))
+    return temperature
+
+
+def get_embedding(text, mod=None):
+    provider = _detect_provider()
+    preset = PROVIDER_PRESETS[provider]
+    if mod is None:
+        mod = preset.get("embedding_model") or "text-embedding-3-small"
+    if provider == "minimax" and preset.get("embedding_model") is None:
+        # Fall back to OpenAI for embeddings when using MiniMax as LLM provider
+        client = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            base_url=os.getenv("OPENAI_API_BASE_URL"),
+        )
+    else:
+        client, _ = _get_client(provider)
 
     response = client.embeddings.create(
         input=text,
@@ -83,12 +139,12 @@ def add_sum(n4j,content,gid):
     return s
 
 def call_llm(sys, user):
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_API_BASE_URL")
-    )
+    provider = _detect_provider()
+    client, preset = _get_client(provider)
+    model = os.getenv("LLM_MODEL", preset["default_model"])
+    temperature = _clamp_temperature(0.5, provider)
     response = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model=model,
         messages=[
             {"role": "system", "content": sys},
             {"role": "user", "content": f" {user}"},
@@ -96,7 +152,7 @@ def call_llm(sys, user):
         max_tokens=500,
         n=1,
         stop=None,
-        temperature=0.5,
+        temperature=temperature,
     )
     return response.choices[0].message.content
 
