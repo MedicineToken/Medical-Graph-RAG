@@ -4,8 +4,30 @@ from concurrent.futures import ThreadPoolExecutor
 import tiktoken
 import os
 
-# Add your own OpenAI API key
-openai_api_key = os.getenv("OPENAI_API_KEY")
+# Provider configuration presets (shared with utils.py)
+_PROVIDER_PRESETS = {
+    "openai": {
+        "api_key_env": "OPENAI_API_KEY",
+        "base_url_env": "OPENAI_API_BASE_URL",
+        "default_model": "gpt-4-1106-preview",
+    },
+    "minimax": {
+        "api_key_env": "MINIMAX_API_KEY",
+        "base_url_env": "MINIMAX_API_BASE_URL",
+        "default_base_url": "https://api.minimax.io/v1",
+        "default_model": "MiniMax-M2.7",
+    },
+}
+
+
+def _detect_provider():
+    explicit = os.getenv("LLM_PROVIDER", "").lower()
+    if explicit in _PROVIDER_PRESETS:
+        return explicit
+    if os.getenv("MINIMAX_API_KEY"):
+        return "minimax"
+    return "openai"
+
 
 sum_prompt = """
 Generate a structured summary from the provided medical source (report, paper, or book), strictly adhering to the following categories. The summary should list key information under each category in a concise format: 'CATEGORY_NAME: Key information'. No additional explanations or detailed descriptions are necessary unless directly related to the categories:
@@ -33,12 +55,20 @@ Each category should be addressed only if relevant to the content of the medical
 """
 
 def call_openai_api(chunk):
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_API_BASE_URL")
+    provider = _detect_provider()
+    preset = _PROVIDER_PRESETS[provider]
+    api_key = os.getenv(preset["api_key_env"])
+    base_url = os.getenv(
+        preset["base_url_env"],
+        preset.get("default_base_url"),
     )
+    client = OpenAI(api_key=api_key, base_url=base_url)
+    model = os.getenv("LLM_MODEL", preset["default_model"])
+    temperature = 0.5
+    if provider == "minimax":
+        temperature = max(0.01, min(temperature, 1.0))
     response = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model=model,
         messages=[
             {"role": "system", "content": sum_prompt},
             {"role": "user", "content": f" {chunk}"},
@@ -46,7 +76,7 @@ def call_openai_api(chunk):
         max_tokens=500,
         n=1,
         stop=None,
-        temperature=0.5,
+        temperature=temperature,
     )
     return response.choices[0].message.content
 

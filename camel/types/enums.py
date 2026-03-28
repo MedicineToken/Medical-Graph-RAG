@@ -82,6 +82,10 @@ class ModelType(Enum):
     MISTRAL_MIXTRAL_8x22B = "open-mixtral-8x22b"
     MISTRAL_CODESTRAL_MAMBA = "open-codestral-mamba"
 
+    # MiniMax AI Models
+    MINIMAX_M27 = "MiniMax-M2.7"
+    MINIMAX_M27_HIGHSPEED = "MiniMax-M2.7-highspeed"
+
     @property
     def value_for_tiktoken(self) -> str:
         return (
@@ -192,6 +196,14 @@ class ModelType(Enum):
         }
 
     @property
+    def is_minimax(self) -> bool:
+        r"""Returns whether this type of models is a MiniMax model."""
+        return self in {
+            ModelType.MINIMAX_M27,
+            ModelType.MINIMAX_M27_HIGHSPEED,
+        }
+
+    @property
     def is_gemini(self) -> bool:
         return self in {ModelType.GEMINI_1_5_FLASH, ModelType.GEMINI_1_5_PRO}
 
@@ -265,6 +277,11 @@ class ModelType(Enum):
             ModelType.CLAUDE_3_5_SONNET,
         }:
             return 200_000
+        elif self in {
+            ModelType.MINIMAX_M27,
+            ModelType.MINIMAX_M27_HIGHSPEED,
+        }:
+            return 204_000
         elif self in {
             ModelType.MISTRAL_CODESTRAL_MAMBA,
         }:
@@ -448,6 +465,7 @@ class ModelPlatformType(Enum):
     GEMINI = "gemini"
     VLLM = "vllm"
     MISTRAL = "mistral"
+    MINIMAX = "minimax"
 
     @property
     def is_openai(self) -> bool:
@@ -503,6 +521,11 @@ class ModelPlatformType(Enum):
     def is_gemini(self) -> bool:
         r"""Returns whether this platform is Gemini."""
         return self is ModelPlatformType.GEMINI
+
+    @property
+    def is_minimax(self) -> bool:
+        r"""Returns whether this platform is MiniMax."""
+        return self is ModelPlatformType.MINIMAX
 
 
 class AudioModelType(Enum):

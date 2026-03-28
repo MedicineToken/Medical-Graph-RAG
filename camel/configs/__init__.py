@@ -16,6 +16,7 @@ from .base_config import BaseConfig
 from .gemini_config import Gemini_API_PARAMS, GeminiConfig
 from .groq_config import GROQ_API_PARAMS, GroqConfig
 from .litellm_config import LITELLM_API_PARAMS, LiteLLMConfig
+from .minimax_config import MINIMAX_API_PARAMS, MiniMaxConfig
 from .mistral_config import MISTRAL_API_PARAMS, MistralConfig
 from .ollama_config import OLLAMA_API_PARAMS, OllamaConfig
 from .openai_config import OPENAI_API_PARAMS, ChatGPTConfig, OpenSourceConfig
@@ -33,6 +34,8 @@ __all__ = [
     'OpenSourceConfig',
     'LiteLLMConfig',
     'LITELLM_API_PARAMS',
+    'MiniMaxConfig',
+    'MINIMAX_API_PARAMS',
     'OllamaConfig',
     'OLLAMA_API_PARAMS',
     'ZhipuAIConfig',
